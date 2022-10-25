@@ -11,11 +11,12 @@ import (
 	cgroupsv1 "github.com/containerd/cgroups/stats/v1"
 	"github.com/containerd/typeurl"
 
-	google_protobuf "github.com/gogo/protobuf/types"
+	"github.com/containerd/containerd/protobuf"
+	anypb "google.golang.org/protobuf/types/known/anypb"
 	vc "github.com/kata-containers/kata-containers/src/runtime/virtcontainers"
 )
 
-func marshalMetrics(ctx context.Context, s *service, containerID string) (*google_protobuf.Any, error) {
+func marshalMetrics(ctx context.Context, s *service, containerID string) (*anypb.Any, error) {
 	stats, err := s.sandbox.StatsContainer(ctx, containerID)
 	if err != nil {
 		return nil, err
@@ -28,7 +29,7 @@ func marshalMetrics(ctx context.Context, s *service, containerID string) (*googl
 		return nil, err
 	}
 
-	return data, nil
+	return protobuf.FromAny(data), nil
 }
 
 func statsToMetrics(stats *vc.ContainerStats) *cgroupsv1.Metrics {

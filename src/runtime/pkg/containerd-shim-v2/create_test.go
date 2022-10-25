@@ -13,8 +13,9 @@ import (
 	"path"
 	"testing"
 
+	"github.com/containerd/containerd/protobuf"
 	"github.com/containerd/containerd/namespaces"
-	taskAPI "github.com/containerd/containerd/runtime/v2/task"
+	taskAPI "github.com/containerd/containerd/api/runtime/task/v2"
 	crioption "github.com/containerd/cri-containerd/pkg/api/runtimeoptions/v1"
 	"github.com/containerd/typeurl"
 	specs "github.com/opencontainers/runtime-spec/specs-go"
@@ -392,8 +393,9 @@ func TestCreateLoadRuntimeConfig(t *testing.T) {
 	fakeConfig := "foobar"
 	anno[vcAnnotations.SandboxConfigPathKey] = fakeConfig
 	option := &crioption.Options{ConfigPath: fakeConfig}
-	r.Options, err = typeurl.MarshalAny(option)
+	any, err := typeurl.MarshalAny(option)
 	assert.NoError(err)
+	r.Options = protobuf.FromAny(any)
 	err = os.Setenv("KATA_CONF_FILE", fakeConfig)
 	assert.NoError(err)
 	defer os.Setenv("KATA_CONF_FILE", "")
@@ -410,13 +412,15 @@ func TestCreateLoadRuntimeConfig(t *testing.T) {
 
 	// 2. shimv2 create task option
 	option.ConfigPath = config
-	r.Options, err = typeurl.MarshalAny(option)
+	any, err = typeurl.MarshalAny(option)
 	assert.NoError(err)
+	r.Options = protobuf.FromAny(any)
 	_, err = loadRuntimeConfig(s, r, anno)
 	assert.NoError(err)
 	option.ConfigPath = ""
-	r.Options, err = typeurl.MarshalAny(option)
+	any, err = typeurl.MarshalAny(option)
 	assert.NoError(err)
+	r.Options = protobuf.FromAny(any)
 
 	// 3. environment
 	err = os.Setenv("KATA_CONF_FILE", config)
