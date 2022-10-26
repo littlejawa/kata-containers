@@ -9,9 +9,10 @@ import (
 	"context"
 	"time"
 
+	"github.com/containerd/containerd/api/runtime/task/v2"
+	"github.com/containerd/containerd/errdefs"
 	"github.com/containerd/containerd/plugin"
 	"github.com/containerd/containerd/runtime/v2/shim"
-	"github.com/containerd/containerd/api/runtime/task/v2"
 	"github.com/containerd/ttrpc"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
@@ -51,8 +52,22 @@ func (is *ImageService) RegisterTTRPC(server *ttrpc.Server) error {
 
 // Pull image and unbundle ready for container creation
 func (is *ImageService) PullImage(ctx context.Context, req *task.PullImageRequest) (_ *task.PullImageResponse, err error) {
-	shimLog.WithField("image", req.Image).Debug("PullImage() start")
-	defer shimLog.WithField("image", req.Image).Debug("PullImage() end")
+	shimLog.WithField("image", req.Image).Debug("JUJU - kata PullImage() start")
+	defer shimLog.WithField("image", req.Image).Debug("JUJU - kata PullImage() end")
+
+	if is == nil {
+		err = errdefs.ToGRPCf(errdefs.ErrInvalidArgument, "'is' is nil")
+	} else if is.s == nil {
+		err = errdefs.ToGRPCf(errdefs.ErrInvalidArgument, "'is.s' is nil")
+	} else if is.s.sandbox == nil {
+		err = errdefs.ToGRPCf(errdefs.ErrInvalidArgument, "'is.s.sandbox' is nil")
+	}
+	if err != nil {
+		shimLog.Errorf("JUJU - kata aborts PullImage with fake resp: %v", err)
+		return &task.PullImageResponse{
+			ImageRef: "This is an error",
+		}, err
+	}
 	span, spanCtx := katatrace.Trace(is.s.rootCtx, shimLog, "PullImage", shimTracingTags)
 	defer span.End()
 
