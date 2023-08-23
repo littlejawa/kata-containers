@@ -10,14 +10,14 @@ import (
 
 	cgroupsv1 "github.com/containerd/cgroups/stats/v1"
 	cgroupsv2 "github.com/containerd/cgroups/v2/stats"
-	"github.com/containerd/typeurl"
+	"github.com/containerd/containerd/protobuf"
+	anypb "google.golang.org/protobuf/types/known/anypb"
 
-	google_protobuf "github.com/gogo/protobuf/types"
 	resCtrl "github.com/kata-containers/kata-containers/src/runtime/pkg/resourcecontrol"
 	vc "github.com/kata-containers/kata-containers/src/runtime/virtcontainers"
 )
 
-func marshalMetrics(ctx context.Context, s *service, containerID string) (*google_protobuf.Any, error) {
+func marshalMetrics(ctx context.Context, s *service, containerID string) (*anypb.Any, error) {
 	stats, err := s.sandbox.StatsContainer(ctx, containerID)
 	if err != nil {
 		return nil, err
@@ -36,7 +36,7 @@ func marshalMetrics(ctx context.Context, s *service, containerID string) (*googl
 		metrics = statsToMetricsV2(&stats)
 	}
 
-	data, err := typeurl.MarshalAny(metrics)
+	data, err := protobuf.MarshalAnyToProto(metrics)
 	if err != nil {
 		return nil, err
 	}

@@ -19,9 +19,9 @@ import (
 	"strings"
 	"syscall"
 
+	taskAPI "github.com/containerd/containerd/api/runtime/task/v2"
 	containerd_types "github.com/containerd/containerd/api/types"
 	"github.com/containerd/containerd/mount"
-	taskAPI "github.com/containerd/containerd/runtime/v2/task"
 	"github.com/containerd/typeurl"
 	"github.com/kata-containers/kata-containers/src/runtime/pkg/utils"
 	"github.com/kata-containers/kata-containers/src/runtime/virtcontainers"
